@@ -1,0 +1,9 @@
+*.exe
+AES.cpp
+blowfish.cpp
+RSA.cpp
+RSAtest.cpp
+SHA-256.cpp
+tempCodeRunnerFile.cpp
+test.cpp
+.vscode/ 
