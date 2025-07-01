@@ -6,14 +6,15 @@
 #include <sstream>
 #include <limits>
 #include <iomanip>
+#include <climits>
 using namespace std;
-
+typedef unsigned long long ull;
 class RSA {
 private:
-    long long p, q, n, phi, e, d;
+    ull p, q, n, phi, e, d;
 
-    long long luyThuaMod(long long coSo, long long mu, long long mod) const {
-        long long kq = 1;
+    ull luyThuaMod(ull coSo, ull mu, ull mod) const {
+        ull kq = 1;
         coSo %= mod;
         while (mu) {
             if (mu % 2) kq = kq * coSo % mod;
@@ -22,33 +23,32 @@ private:
         }
         return kq;
     }
-
-        bool laSoNguyenTo(long long num) {
+        bool laSoNguyenTo(ull num) {
         if (num < 2 || (num % 2 == 0 && num != 2)) return false;
-        for (long long i = 3; i * i <= num; i += 2)
+        for (ull i = 3; i * i <= num; i += 2)
             if (num % i == 0) return false;
         return true;
     }
 
-    long long ucln(long long a, long long b) const {
+    ull ucln(ull a, ull b) const {
         while (b) tie(a, b) = make_pair(b, a % b);
         return a;
     }
 
-    long long nghichDaoMod(long long a, long long m) const {
-        long long m0 = m, x0 = 0, x1 = 1;
+    ull nghichDaoMod(ull a, ull m) const {
+        ull m0 = m, x0 = 0, x1 = 1;
         while (a > 1) {
-            long long q = a / m;
+            ull q = a / m;
             tie(a, m) = make_pair(m, a % m);
             tie(x0, x1) = make_pair(x1 - q * x0, x0);
         }
         return (x1 + m0) % m0;
     }
 
-    long long taoSoNguyenTo(long long min, long long max) {
+    ull taoSoNguyenTo(ull min, ull max) {
         mt19937 ngauNhien(random_device{}());
-        uniform_int_distribution<long long> dis(min, max);
-        long long p;
+        uniform_int_distribution<ull> dis(min, max);
+        ull p;
         do { p = dis(ngauNhien) | 1; } while (!laSoNguyenTo(p));
         return p;
     
@@ -56,63 +56,48 @@ private:
 
 public:
     void taoKhoa(int doDai = 5) {
-        long long min = pow(10, doDai - 1), max = pow(10, doDai);
+        ull min = pow(10, doDai - 1), max = pow(10, doDai);
         do { p = taoSoNguyenTo(min, max); q = taoSoNguyenTo(min, max); } while (p == q);
         n = p * q; phi = (p - 1) * (q - 1); e = 65537;
         while (ucln(e, phi) != 1) e += 2;
         d = nghichDaoMod(e, phi);
     }
 
-    void setN(long long n_) { n = n_; }
-    void setE(long long e_) { e = e_; }
-    void setD(long long d_) { d = d_; }
-    long long getN() const { return n; }
-    long long getE() const { return e; }
-    long long getD() const { return d; }
-    long long luyThuaModPublic(long long coSo, long long mu, long long mod) const { return luyThuaMod(coSo, mu, mod); }
+    void setN(ull n_) { n = n_; }
+    void setE(ull e_) { e = e_; }
+    void setD(ull d_) { d = d_; }
+    ull getN() const { return n; }
+    ull getE() const { return e; }
+    ull getD() const { return d; }
+    ull luyThuaModPublic(ull coSo, ull mu, ull mod) const { return luyThuaMod(coSo, mu, mod); }
 
-    long long maHoa(long long thongDiep) const {
-        return (thongDiep < n) ? luyThuaMod(thongDiep, e, n) : -1;
+    ull maHoa(ull thongDiep) const {
+        return (thongDiep < n) ? luyThuaMod(thongDiep, e, n) : ULLONG_MAX;
     }
 
-    long long giaiMa(long long banMa) const {
+    ull giaiMa(ull banMa) const {
         return luyThuaMod(banMa, d, n);
     }
 
-    vector<long long> maHoaChuoi(const string &s) const {
-        vector<long long> kq;
+    vector<ull> maHoaChuoi(const string &s, ull eNguoiNhan, ull nNguoiNhan) const {
+        vector<ull> kq;
         const int BLOCK_SIZE = 3;
         for (size_t i = 0; i < s.size(); i += BLOCK_SIZE) {
-            long long blockVal = 0;
+            ull blockVal = 0;
             int len = min((int)s.size() - (int)i, BLOCK_SIZE);
             for (int j = 0; j < len; ++j) {
                 blockVal = blockVal * 256 + (unsigned char)s[i + j];
             }
-            kq.push_back(maHoa(blockVal));
+            kq.push_back((blockVal < nNguoiNhan) ? luyThuaMod(blockVal, eNguoiNhan, nNguoiNhan) : ULLONG_MAX);
         }
         return kq;
     }
 
-    string giaiMaChuoi(const vector<long long> &ds) const {
+    string giaiMaChuoi(const vector<ull> &ds) const {
         string s;
         for (auto ma : ds) {
-            if (ma == -1) continue;
-            long long val = giaiMa(ma);
-            string part;
-            while (val > 0) {
-                part = (char)(val % 256) + part;
-                val /= 256;
-            }
-            s += part;
-        }
-        return s;
-    }
-
-    string giaiMaChuoiVoiKhoaRieng(const vector<long long>& ds, long long dNhap, long long nNhap) const {
-        string s;
-        for (auto ma : ds) {
-            if (ma == -1) continue;
-            long long val = luyThuaMod(ma, dNhap, nNhap);
+            if (ma == ULLONG_MAX) continue;
+            ull val = giaiMa(ma);
             string part;
             while (val > 0) {
                 part = (char)(val % 256) + part;
@@ -126,7 +111,7 @@ public:
 
 void menu() {
     RSA rsa;
-    vector<long long> banMa;
+    vector<ull> banMa;
     bool daTaoKhoa = false;
     int chon;
     do {
@@ -154,7 +139,7 @@ void menu() {
                 cout << "Khoa cong khai: (" << rsa.getN() << ", " << rsa.getE() << ")\n";
                 cout << "Khoa rieng tu : (" << rsa.getN() << ", " << rsa.getD() << ")\n";
             } else if (luaChon == 2) {
-                long long n, e, d;
+                ull n, e, d;
                 cout << "Nhap n: ";
                 cin >> n;
                 cout << "Nhap e: ";
@@ -162,7 +147,6 @@ void menu() {
                 cout << "Nhap d: ";
                 cin >> d;
                 cin.ignore();
-                rsa = RSA();
                 rsa.setN(n);
                 rsa.setE(e);
                 rsa.setD(d);
@@ -174,51 +158,46 @@ void menu() {
         } else if (chon >= 2 && chon <= 5 && !daTaoKhoa) {
             cout << "Ban chua tao khoa! Vui long chon 1 de tao khoa truoc.\n";
         } else if (chon == 2) {
-            long long m, e, n;
+            ull m, e, n;
             cout << "Nhap so can ma hoa: ";
             cin >> m;
             cout << "Nhap khoa cong khai cua nguoi nhan (e, n): ";
             cin >> e >> n;
             cin.ignore();
-            long long c = (m < n) ? rsa.luyThuaModPublic(m, e, n) : -1;
-            if (c != -1)
+            ull c = (m < n) ? rsa.luyThuaModPublic(m, e, n) : ULLONG_MAX;
+            if (c != ULLONG_MAX)
                 cout << "So ma hoa: " << c << "\n";
             else
                 cout << "So qua lon, khong ma hoa duoc!\n";
         } else if (chon == 3) {
-            long long c;
+            ull c;
             cout << "Nhap so can giai ma: ";
             cin >> c;
             cin.ignore();
             cout << "So giai ma: " << rsa.giaiMa(c) << "\n";
         } else if (chon == 4) {
             string msg;
-            long long e, n;
+            ull e, n;
             cout << "Nhap chuoi can ma hoa: ";
             getline(cin, msg);
             cout << "Nhap khoa cong khai cua nguoi nhan (e, n): ";
             cin >> e >> n;
             cin.ignore();
-            vector<long long> maHoaChuoi;
-            const int BLOCK_SIZE = 3;
-            for (size_t i = 0; i < msg.size(); i += BLOCK_SIZE) {
-                long long blockVal = 0;
-                int len = min((int)msg.size() - (int)i, BLOCK_SIZE);
-                for (int j = 0; j < len; ++j) {
-                    blockVal = blockVal * 256 + (unsigned char)msg[i + j];
-                }
-                maHoaChuoi.push_back((blockVal < n) ? rsa.luyThuaModPublic(blockVal, e, n) : -1);
-            }
+            banMa = rsa.maHoaChuoi(msg, e, n);
             cout << "Chuoi ma hoa: ";
-            for (auto ma : maHoaChuoi)
-                cout << ma << " ";
+            for (auto ma : banMa) {
+                if (ma == ULLONG_MAX)
+                    cout << "ERROR ";
+                else
+                    cout << ma << " ";
+            }
             cout << "\n";
         } else if (chon == 5) {
             cout << "Nhap chuoi cac so da ma hoa (vd: 123 456 789): ";
             string dong;
             getline(cin, dong);
             stringstream ss(dong);
-            long long so;
+            ull so;
             banMa.clear();
             while (ss >> so) banMa.push_back(so);
             if (banMa.empty()) {
