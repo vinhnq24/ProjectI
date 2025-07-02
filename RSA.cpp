@@ -13,31 +13,39 @@ class RSA {
 private:
     ull p, q, n, phi, e, d;
 
-    ull luyThuaMod(ull coSo, ull mu, ull mod) const {
+    ull luyThuaMod(ull coSo, ull mu, ull mod) const 
+    {
         ull kq = 1;
         coSo %= mod;
-        while (mu) {
-            if (mu % 2) kq = kq * coSo % mod;
-            coSo = coSo * coSo % mod;
-            mu /= 2;
+        while (mu) 
+        {
+            if (mu % 2) 
+                kq = kq * coSo % mod;
+                coSo = coSo * coSo % mod;
+                mu /= 2;
         }
         return kq;
     }
-        bool laSoNguyenTo(ull num) {
-        if (num < 2 || (num % 2 == 0 && num != 2)) return false;
-        for (ull i = 3; i * i <= num; i += 2)
-            if (num % i == 0) return false;
-        return true;
-    }
+        bool laSoNguyenTo(ull num) 
+        {
+            if (num < 2 || (num % 2 == 0 && num != 2)) return false;
+            for (ull i = 3; i * i <= num; i += 2)
+                if (num % i == 0) return false;
+            return true;
+        }
 
-    ull ucln(ull a, ull b) const {
-        while (b) tie(a, b) = make_pair(b, a % b);
+    ull ucln(ull a, ull b) const 
+    {
+        while (b) 
+        tie(a, b) = make_pair(b, a % b);
         return a;
     }
 
-    ull nghichDaoMod(ull a, ull m) const {
+    ull nghichDaoMod(ull a, ull m) const 
+    {
         ull m0 = m, x0 = 0, x1 = 1;
-        while (a > 1) {
+        while (a > 1) 
+        {
             ull q = a / m;
             tie(a, m) = make_pair(m, a % m);
             tie(x0, x1) = make_pair(x1 - q * x0, x0);
@@ -45,17 +53,20 @@ private:
         return (x1 + m0) % m0;
     }
 
-    ull taoSoNguyenTo(ull min, ull max) {
+    ull taoSoNguyenTo(ull min, ull max) 
+    {
         mt19937 ngauNhien(random_device{}());
         uniform_int_distribution<ull> dis(min, max);
         ull p;
-        do { p = dis(ngauNhien) | 1; } while (!laSoNguyenTo(p));
+        do { p = dis(ngauNhien) | 1; } 
+        while (!laSoNguyenTo(p));
         return p;
     
     }
 
 public:
-    void taoKhoa(int doDai = 5) {
+    void taoKhoa(int doDai = 5) 
+    {
         ull min = pow(10, doDai - 1), max = pow(10, doDai);
         do { p = taoSoNguyenTo(min, max); q = taoSoNguyenTo(min, max); } while (p == q);
         n = p * q; phi = (p - 1) * (q - 1); e = 65537;
@@ -75,17 +86,21 @@ public:
         return (thongDiep < n) ? luyThuaMod(thongDiep, e, n) : ULLONG_MAX;
     }
 
-    ull giaiMa(ull banMa) const {
+    ull giaiMa(ull banMa) const 
+    {
         return luyThuaMod(banMa, d, n);
     }
 
-    vector<ull> maHoaChuoi(const string &s, ull eNguoiNhan, ull nNguoiNhan) const {
+    vector<ull> maHoaChuoi(const string &s, ull eNguoiNhan, ull nNguoiNhan) const 
+    {
         vector<ull> kq;
         const int BLOCK_SIZE = 3;
-        for (size_t i = 0; i < s.size(); i += BLOCK_SIZE) {
+        for (size_t i = 0; i < s.size(); i += BLOCK_SIZE) 
+        {
             ull blockVal = 0;
             int len = min((int)s.size() - (int)i, BLOCK_SIZE);
-            for (int j = 0; j < len; ++j) {
+            for (int j = 0; j < len; ++j) 
+            {
                 blockVal = blockVal * 256 + (unsigned char)s[i + j];
             }
             kq.push_back((blockVal < nNguoiNhan) ? luyThuaMod(blockVal, eNguoiNhan, nNguoiNhan) : ULLONG_MAX);
@@ -93,13 +108,16 @@ public:
         return kq;
     }
 
-    string giaiMaChuoi(const vector<ull> &ds) const {
+    string giaiMaChuoi(const vector<ull> &ds) const 
+    {
         string s;
-        for (auto ma : ds) {
+        for (auto ma : ds) 
+        {
             if (ma == ULLONG_MAX) continue;
             ull val = giaiMa(ma);
             string part;
-            while (val > 0) {
+            while (val > 0) 
+            {
                 part = (char)(val % 256) + part;
                 val /= 256;
             }
@@ -109,7 +127,8 @@ public:
     }
 };
 
-void menu() {
+void menu() 
+{
     RSA rsa;
     vector<ull> banMa;
     bool daTaoKhoa = false;
@@ -126,19 +145,22 @@ void menu() {
         cin >> chon;
         cin.ignore();
 
-        if (chon == 1) {
+        if (chon == 1) 
+        {
             int luaChon;
             cout << "1. Tu dong sinh khoa\n";
             cout << "2. Nhap khoa thu cong\n";
             cout << "Chon: ";
             cin >> luaChon;
             cin.ignore();
-            if (luaChon == 1) {
+            if (luaChon == 1) 
+            {
                 rsa.taoKhoa();
                 daTaoKhoa = true;
-                cout << "Khoa cong khai: (" << rsa.getN() << ", " << rsa.getE() << ")\n";
-                cout << "Khoa rieng tu : (" << rsa.getN() << ", " << rsa.getD() << ")\n";
-            } else if (luaChon == 2) {
+                cout << "Khoa cong khai: (" << rsa.getE() << ", " << rsa.getN() << ")\n";
+                cout << "Khoa rieng tu : (" << rsa.getD() << ", " << rsa.getN() << ")\n";
+            } else if (luaChon == 2) 
+            {
                 ull n, e, d;
                 cout << "Nhap n: ";
                 cin >> n;
@@ -155,9 +177,13 @@ void menu() {
             } else {
                 cout << "Lua chon khong hop le!\n";
             }
-        } else if (chon >= 2 && chon <= 5 && !daTaoKhoa) {
+        } 
+        else if (chon >= 2 && chon <= 5 && !daTaoKhoa) 
+        {
             cout << "Ban chua tao khoa! Vui long chon 1 de tao khoa truoc.\n";
-        } else if (chon == 2) {
+        } 
+        else if (chon == 2) 
+        {
             ull m, e, n;
             cout << "Nhap so can ma hoa: ";
             cin >> m;
@@ -169,13 +195,17 @@ void menu() {
                 cout << "So ma hoa: " << c << "\n";
             else
                 cout << "So qua lon, khong ma hoa duoc!\n";
-        } else if (chon == 3) {
+        } 
+        else if (chon == 3) 
+        {
             ull c;
             cout << "Nhap so can giai ma: ";
             cin >> c;
             cin.ignore();
             cout << "So giai ma: " << rsa.giaiMa(c) << "\n";
-        } else if (chon == 4) {
+        } 
+        else if (chon == 4) 
+        {
             string msg;
             ull e, n;
             cout << "Nhap chuoi can ma hoa: ";
@@ -192,7 +222,8 @@ void menu() {
                     cout << ma << " ";
             }
             cout << "\n";
-        } else if (chon == 5) {
+        } else if (chon == 5) 
+        {
             cout << "Nhap chuoi cac so da ma hoa (vd: 123 456 789): ";
             string dong;
             getline(cin, dong);
@@ -200,17 +231,20 @@ void menu() {
             ull so;
             banMa.clear();
             while (ss >> so) banMa.push_back(so);
-            if (banMa.empty()) {
+            if (banMa.empty()) 
+            {
                 cout << "Khong co du lieu de giai ma.\n";
             } else {
                 cout << "Chuoi giai ma: " << rsa.giaiMaChuoi(banMa) << "\n";
             }
         }
-    } while (chon != 0);
+    } 
+    while (chon != 0);
     cout << "Tam biet!\n";
 }
 
-int main() {
+int main() 
+{
     cout << "\n=== CHUONG TRINH MA HOA RSA  ===\n";
     menu();
     return 0;
